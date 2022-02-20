@@ -21,7 +21,35 @@ namespace wis
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    void drawImage(HWND hwnd, const uint8_t* image, int32_t width, int32_t height);
+    void drawImage(HWND hwnd, const uint8_t* image, int32_t width, int32_t height)
+    {
+        HDC hdc;
+        PAINTSTRUCT ps;
+        static HBITMAP hBitmap;
+        static HDC hBuffer;
+
+        hdc = GetDC(hwnd);
+        hBitmap = CreateCompatibleBitmap(hdc, width, height);
+        hBuffer = CreateCompatibleDC(hdc);
+        SelectObject(hBuffer, hBitmap);
+        SelectObject(hBuffer, GetStockObject(NULL_PEN));
+        PatBlt(hBuffer, 0, 0, width, height, BLACKNESS);
+        ReleaseDC(hwnd, hdc);
+
+        for (int32_t y = 0; y < height; y++) {
+            for (int32_t x = 0; x < width; x++) {
+                int32_t offset = (y * width + x) * 3;
+                uint8_t r = image[offset + 0];
+                uint8_t g = image[offset + 1];
+                uint8_t b = image[offset + 2];
+                SetPixel(hBuffer, x, y, RGB(r, g, b));
+            }
+        }
+
+        hdc = BeginPaint(hwnd, &ps);
+        BitBlt(hdc, 0, 0, width, height, hBuffer, 0, 0, SRCCOPY);
+        EndPaint(hwnd, &ps);
+    }
 
     void resizeClientRect(HWND hwnd, int32_t width, int32_t height)
     {
@@ -68,42 +96,23 @@ namespace wis
             DispatchMessage(&msg);
         }
     }
-
-    void drawImage(HWND hwnd, const uint8_t* image, int32_t width, int32_t height)
-    {
-        HDC hdc;
-        PAINTSTRUCT ps;
-        static HBITMAP hBitmap;
-        static HDC hBuffer;
-
-        hdc = GetDC(hwnd);
-        hBitmap = CreateCompatibleBitmap(hdc, width, height);
-        hBuffer = CreateCompatibleDC(hdc);
-        SelectObject(hBuffer, hBitmap);
-        SelectObject(hBuffer, GetStockObject(NULL_PEN));
-        PatBlt(hBuffer, 0, 0, width, height, BLACKNESS);
-        ReleaseDC(hwnd, hdc);
-
-        for (int32_t y = 0; y < height; y++) {
-            for (int32_t x = 0; x < width; x++) {
-                uint8_t red = uint8_t(x / float(width) * 255);
-                uint8_t green = uint8_t(y / float(height) * 255);
-                SetPixel(hBuffer, x, y, RGB(red, green, 0));
-            }
-        }
-
-        hdc = BeginPaint(hwnd, &ps);
-        BitBlt(hdc, 0, 0, width, height, hBuffer, 0, 0, SRCCOPY);
-        EndPaint(hwnd, &ps);
-    }
 }
 
 
 int main()
 {
-    int32_t width = 400;
+    int32_t width = 600;
     int32_t height = 400;
-    uint8_t* image = new uint8_t[width, height, 3];
+    uint8_t* image = new uint8_t[width * height * 3];
+    for (int32_t y = 0; y < height; y++) {
+        for (int32_t x = 0; x < width; x++) {
+            int32_t offset = (y * width + x) * 3;
+            image[offset + 0] = uint8_t(x / float(width) * 255);
+            image[offset + 1] = uint8_t(y / float(height) * 255);
+            image[offset + 2] = uint8_t(0);
+        }
+    }
+
     wis::showImage(image, width, height);
     wis::waitClose();
 }
