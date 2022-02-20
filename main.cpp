@@ -21,15 +21,15 @@ namespace wis
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    void drawImage(HWND hwnd, const char* image, int width, int height);
+    void drawImage(HWND hwnd, const uint8_t* image, int32_t width, int32_t height);
 
-    void resizeClientRect(HWND hwnd, int width, int height)
+    void resizeClientRect(HWND hwnd, int32_t width, int32_t height)
     {
         RECT clientRect, windowRect;
         GetClientRect(hwnd, &clientRect);
         GetWindowRect(hwnd, &windowRect);
-        int diffX = (windowRect.right - windowRect.left) - clientRect.right;
-        int diffY = (windowRect.bottom - windowRect.top) - clientRect.bottom;
+        int32_t diffX = (windowRect.right - windowRect.left) - clientRect.right;
+        int32_t diffY = (windowRect.bottom - windowRect.top) - clientRect.bottom;
         MoveWindow(hwnd, windowRect.left, windowRect.top, width + diffX, height + diffY, TRUE);
     }
 
@@ -52,7 +52,7 @@ namespace wis
         return hwnd;
     }
 
-    void showImage(const char* image, int width, int height)
+    void showImage(const uint8_t* image, int32_t width, int32_t height)
     {
         HWND hwnd = createWindow();
         resizeClientRect(hwnd, width, height);
@@ -69,7 +69,7 @@ namespace wis
         }
     }
 
-    void drawImage(HWND hwnd, const char* image, int width, int height)
+    void drawImage(HWND hwnd, const uint8_t* image, int32_t width, int32_t height)
     {
         HDC hdc;
         PAINTSTRUCT ps;
@@ -84,10 +84,10 @@ namespace wis
         PatBlt(hBuffer, 0, 0, width, height, BLACKNESS);
         ReleaseDC(hwnd, hdc);
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int red = int(x / float(width) * 255);
-                int green = int(y / float(height) * 255);
+        for (int32_t y = 0; y < height; y++) {
+            for (int32_t x = 0; x < width; x++) {
+                uint8_t red = uint8_t(x / float(width) * 255);
+                uint8_t green = uint8_t(y / float(height) * 255);
                 SetPixel(hBuffer, x, y, RGB(red, green, 0));
             }
         }
@@ -101,9 +101,9 @@ namespace wis
 
 int main()
 {
-    int width = 400;
-    int height = 400;
-    char* image = new char[width, height, 3];
+    int32_t width = 400;
+    int32_t height = 400;
+    uint8_t* image = new uint8_t[width, height, 3];
     wis::showImage(image, width, height);
     wis::waitClose();
 }
