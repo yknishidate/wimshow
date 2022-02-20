@@ -21,7 +21,7 @@ namespace wis
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    void drawImage(HWND hwnd);
+    void drawImage(HWND hwnd, const char* image, int width, int height);
 
     void resizeClientRect(HWND hwnd, int width, int height)
     {
@@ -52,12 +52,12 @@ namespace wis
         return hwnd;
     }
 
-    void imshow()
+    void showImage(const char* image, int width, int height)
     {
         HWND hwnd = createWindow();
-        resizeClientRect(hwnd, 400, 400);
+        resizeClientRect(hwnd, width, height);
         ShowWindow(hwnd, 1);
-        drawImage(hwnd);
+        drawImage(hwnd, image, width, height);
     }
 
     void waitClose()
@@ -69,7 +69,7 @@ namespace wis
         }
     }
 
-    void drawImage(HWND hwnd)
+    void drawImage(HWND hwnd, const char* image, int width, int height)
     {
         HDC hdc;
         PAINTSTRUCT ps;
@@ -77,32 +77,23 @@ namespace wis
         static HDC hBuffer;
 
         hdc = GetDC(hwnd);
-        hBitmap = CreateCompatibleBitmap(hdc, 400, 400);
+        hBitmap = CreateCompatibleBitmap(hdc, width, height);
         hBuffer = CreateCompatibleDC(hdc);
         SelectObject(hBuffer, hBitmap);
         SelectObject(hBuffer, GetStockObject(NULL_PEN));
-        PatBlt(hBuffer, 0, 0, 400, 400, BLACKNESS);
+        PatBlt(hBuffer, 0, 0, width, height, BLACKNESS);
         ReleaseDC(hwnd, hdc);
 
-        auto border = GetSystemMetrics(SM_CXSIZEFRAME);
-        std::cout << "border: " << border << std::endl;
-
-        RECT r;
-        GetClientRect(hwnd, &r);
-
-        if (r.bottom == 0) {
-            return;
-        }
-        for (int y = 0; y < r.bottom; y++) {
-            for (int x = 0; x < r.right; x++) {
-                int red = int(x / float(r.right) * 255);
-                int green = int(y / float(r.bottom) * 255);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int red = int(x / float(width) * 255);
+                int green = int(y / float(height) * 255);
                 SetPixel(hBuffer, x, y, RGB(red, green, 0));
             }
         }
 
         hdc = BeginPaint(hwnd, &ps);
-        BitBlt(hdc, 0, 0, 400, 400, hBuffer, 0, 0, SRCCOPY);
+        BitBlt(hdc, 0, 0, width, height, hBuffer, 0, 0, SRCCOPY);
         EndPaint(hwnd, &ps);
     }
 }
@@ -110,6 +101,9 @@ namespace wis
 
 int main()
 {
-    wis::imshow();
+    int width = 400;
+    int height = 400;
+    char* image = new char[width, height, 3];
+    wis::showImage(image, width, height);
     wis::waitClose();
 }
