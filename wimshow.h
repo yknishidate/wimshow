@@ -58,7 +58,7 @@ namespace wis
 
     inline HWND createWindow()
     {
-        const wchar_t CLASS_NAME[] = L"Window Class";
+        const char CLASS_NAME[] = "Window Class";
         HINSTANCE hInstance = GetModuleHandle(0);
         WNDCLASS wc{};
         wc.lpfnWndProc = WindowProc;
@@ -66,7 +66,7 @@ namespace wis
         wc.lpszClassName = CLASS_NAME;
         RegisterClass(&wc);
 
-        HWND hwnd = CreateWindowEx(0, CLASS_NAME, L"Window", WS_OVERLAPPEDWINDOW,
+        HWND hwnd = CreateWindowEx(0, CLASS_NAME, "Window", WS_OVERLAPPEDWINDOW,
                                    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                                    NULL, NULL, hInstance, NULL);
         return hwnd;
